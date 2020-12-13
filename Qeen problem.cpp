@@ -1,5 +1,6 @@
 ﻿#include <iostream>
 #include "Type_calculations.h"
+
 /*--------------Initial class-----------------*/
 template <int32_t N, bool persp, int32_t depth, class ...Args>
 struct Tree {};
@@ -13,23 +14,37 @@ template <int32_t N, int32_t depth, int32_t Iter, class LastChosen, class Head, 
 struct Checker<N, depth, Iter, LastChosen, Head, Args...>
 {
 	static const bool OK = Checker <N, depth, Iter + 1, LastChosen, Args...>::OK && (!Equal<LastChosen, Head>::result) &&
-		(!Equal< Abs<Minus<LastChosen, Head>::result>::result, Number<Iter>>::result);
+		(!Equal< Number<LastChosen::value-Head::value>, Number<Iter>>::result) && 
+		(!Equal< Number<Head::value-LastChosen::value>, Number<Iter>>::result);
 };
 
-//If we are out of range in Tree - chain is no perspective
-template <int32_t N, int32_t depth, int32_t Iter, class... Args>
-struct Checker<N, depth, Iter, Number<N + 1>, Args...>
+//If we are out of range in Tree - chain is not perspective
+template <int32_t N, int32_t depth, int32_t Iter, class Head, class... Args>
+struct Checker<N, depth, Iter, Number<N + 1>, Head, Args...>
 {
 	static const bool OK = false;
 };
 
 
-//If we are there is only LastChosen queen left - stop, return true
+//there is only LastChosen queen left - stop, return true
 template <int32_t N, int32_t depth, int32_t Iter, class LastChosen>
 struct Checker<N, depth, Iter, LastChosen>
 {
 	static const bool OK = true;
 };
+
+template <int32_t N, int32_t Iter, class LastChosen>
+struct Checker<N, 1, Iter, LastChosen>
+{
+	static const bool OK = true;
+};
+
+template <int32_t N, int32_t Iter>
+struct Checker<N, 1, Iter, Number<N+1>>
+{
+	static const bool OK = false;
+};
+
 
 /*---------Generating state tree-------------*/
 template <int32_t N, bool Persp, int32_t depth, int32_t lastChosen, class ...Args>
@@ -78,4 +93,5 @@ int main()
 {
 	constexpr int32_t N = 8;
 	std::cout << Tree<N, true, 1, Number<1>>::result;
+	//std::cout << Abs<Number<1>>::result::value;
 }
